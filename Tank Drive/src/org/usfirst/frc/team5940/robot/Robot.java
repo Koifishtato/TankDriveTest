@@ -3,6 +3,7 @@ package org.usfirst.frc.team5940.robot;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.usfirst.frc.team5940.robot.Components.Camera;
 
 import org.usfirst.frc.team5940.robot.Components.Joy;
 import org.usfirst.frc.team5940.robot.Components.MotorGroup;
@@ -27,7 +28,7 @@ import edu.wpi.first.wpilibj.Timer;
  * instead if you're new.
  */
 public class Robot extends SampleRobot {
-
+	public Thread camera;
 	public Robot() {
 		
 	}
@@ -47,13 +48,16 @@ public class Robot extends SampleRobot {
 		}
 		*/
 		
+		this.camera = new Thread(new Camera(this));
 		MotorGroup Motors = new MotorGroup();
 		Joy Joys = new Joy(0);
 		double[] pos;
 		//speed [1] is Left, and [0] is Right Motor group
 		double[] speeds={0,0};
 		double pro=0.75;
+		this.camera.start();
 		while (isOperatorControl() && isEnabled() ){
+			
 			pos=Joys.get(0, 6);
 			
 			if((pos[1]>0.1||pos[1]<-0.1)&&(0.1>pos[4]&&pos[4]>-0.1)){
