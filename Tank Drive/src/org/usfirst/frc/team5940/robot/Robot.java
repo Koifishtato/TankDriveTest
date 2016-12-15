@@ -1,4 +1,6 @@
 package org.usfirst.frc.team5940.robot;
+import java.lang.Math;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -36,64 +38,87 @@ public class Robot extends SampleRobot {
 	/**
 	 * Runs the motors with tank steering.
 	 */
+	public static DigitalInput ballDetector = new DigitalInput(9);
 	public void operatorControl() {
-		/**MotorGroup Motors = new MotorGroup();
+		MotorGroup Motors = new MotorGroup();
+		MotorGroup Roller = new MotorGroup(0);
 		Joy Joys = new Joy(0);
 		double[] pos;
 		while (isOperatorControl() && isEnabled()) {
 			pos = Joys.get(0, 6);
-			Motors.goL(pos[1]);
-			Motors.goR(pos[5]);
-		
+			if(Math.abs(pos[1])>0.1||Math.abs(pos[5])>0.1){
+				Motors.goL(-(pos[1]));
+				Motors.goR(-(pos[5]));
+			}
+			else{
+				Motors.goL(0);
+				Motors.goR(0);
+			}
+			if(pos[3]>0.4){
+				Roller.go(-pos[3]/2, 0);
+			}
+			else if(pos[2]>0.4 & getCorrectedDetector()){
+				Roller.go(pos[2]/2, 0);
+			}
+			else{
+				Roller.go(0, 0);
+			}
+			SmartDashboard.putBoolean("Sensor", getCorrectedDetector());
 		}
-		*/
 		
-		this.camera = new Thread(new Camera(this));
+		
+		/**this.camera = new Thread(new Camera(this));
 		MotorGroup Motors = new MotorGroup();
 		Joy Joys = new Joy(0);
 		double[] pos;
 		//speed [1] is Left, and [0] is Right Motor group
 		double[] speeds={0,0};
-		double pro=0.75;
+		int [] turn = {1,0};
 		this.camera.start();
 		while (isOperatorControl() && isEnabled() ){
 			
 			pos=Joys.get(0, 6);
 			
-			if((pos[1]>0.1||pos[1]<-0.1)&&(0.1>pos[4]&&pos[4]>-0.1)){
-				speeds[0]=pos[1];
-				speeds[1]=pos[1];
+			if((pos[turn[0]]>0.1||pos[turn[0]]<-0.1)&&(0.1>pos[turn[1]]&&pos[turn[1]]>-0.1)){
+				speeds[0]=-pos[turn[0]];
+				speeds[1]=-pos[turn[0]];
 				SmartDashboard.putString("Status ", "Foward");
 			}
-			else if((pos[4]>0.1||pos[4]<-0.1)&&(0.1>pos[1]&&pos[1]>-0.1)){
-				speeds[0]=pos[4];
-				speeds[1]=-pos[4];
+			else if((pos[turn[1]]>0.1||pos[turn[1]]<-0.1)&&(0.1>pos[turn[0]]&&pos[turn[0]]>-0.1)){
+				speeds[0]=-pos[turn[1]];
+				speeds[1]=pos[turn[1]];
 				SmartDashboard.putString("Status ", "Rotate");
 			}
-			else if((pos[4]>0.1||pos[4]<-0.1)&&(0.1<pos[1]||pos[1]<-0.1)){
-				if (pos[4]<-0.1){
-					if(pos[1]>-pro||pos[1]<pro){
-						speeds[0]=(pos[1]);
-						speeds[1]=(pos[1])-(pos[4]/2);
+			else if((pos[turn[1]]>0.1||pos[turn[1]]<-0.1)&&(0.1<pos[turn[0]]||pos[turn[0]]<-0.1)){
+				if (pos[turn[1]]<-0.1){
+					if(pos[turn[0]]>-pro||pos[turn[0]]<pro){
+						speeds[0]=(pos[turn[0]]);
+						speeds[1]=(pos[turn[0]])-(pos[turn[1]]/2);
 						SmartDashboard.putString("Status ", "Turn Right Fast");
 					}
 					else{
-						speeds[0]=(pos[1]);
-						speeds[1]=(pos[1])-(pos[4]/10);
+						speeds[0]=(pos[turn[0]]);
+						speeds[1]=(pos[turn[0]])-(pos[turn[1]]/10);
 						SmartDashboard.putString("Status ", "Turn Right Slow");
 					}
+					speeds[0]=(-pos[turn[0]]);
+					speeds[1]=(-pos[turn[0]])+(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
+					SmartDashboard.putNumber("div ", pos[turn[1]]/Math.abs(pos[turn[0]]-0.1));
 				}
-				else if(pos[4]>0.1){
-					if(pos[1]>-pro||pos[1]<pro){
-						speeds[0]=(pos[1])-(-pos[4]/2);
-						speeds[1]=(pos[1]);
+				else if(pos[turn[1]]>0.1){
+					if(pos[turn[0]]>-pro||pos[turn[0]]<pro){
+						speeds[0]=(pos[turn[0]])-(-pos[turn[1]]/2);
+						speeds[1]=(pos[turn[0]]);
 						SmartDashboard.putString("Status ", "Turn Left Fast");
 					}
 					else{
-						speeds[0]=(pos[1])-(-pos[4]/10);
-						speeds[1]=(pos[1]);
+						speeds[0]=(pos[turn[0]])-(-pos[turn[1]]/10);
+						speeds[1]=(pos[turn[0]]);
 						SmartDashboard.putString("Status ", "Turn Left Slow");
 					}
+					speeds[0]=(-pos[turn[0]])-(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
+					speeds[1]=(-pos[turn[0]]);
+					SmartDashboard.putNumber("div ", pos[turn[1]]/Math.abs(pos[turn[0]]-0.1));
 				}
 			}
 			else{
@@ -105,7 +130,10 @@ public class Robot extends SampleRobot {
 			Motors.goR(speeds[0]);
 			
 	}
-		
+	*/	
+	}
+	boolean getCorrectedDetector() {
+		return ballDetector.get();
 	}
 }
 	

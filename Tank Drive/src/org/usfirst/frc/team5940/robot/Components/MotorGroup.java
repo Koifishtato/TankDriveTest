@@ -29,8 +29,8 @@ public class MotorGroup {
 	public void goR(double speed) {
 		if (this.inverted)
 			speed*=-1;
-		this.talons[0].set(-speed);
-		this.talons[1].set(-speed);
+		this.talons[0].set(speed);
+		this.talons[1].set(speed);
 		SmartDashboard.putNumber("R Motor Speed: ", speed);
 	}
 
@@ -38,8 +38,11 @@ public class MotorGroup {
 	public void goL(double speed) {
 		if (this.inverted)
 			speed*=-1;
-		this.talons[2].set(speed);
-		this.talons[3].set(speed);
+		this.talons[2].set(-speed);
+		this.talons[3].set(-speed);
 		SmartDashboard.putNumber("L Motor Speed: ", speed);
+	}
+	public void go(double speed, int motor){
+		 this.talons[motor].set(speed);
 	}
 }

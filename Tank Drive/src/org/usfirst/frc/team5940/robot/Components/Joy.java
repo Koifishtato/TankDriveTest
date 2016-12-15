@@ -18,4 +18,7 @@ public class Joy {
 		
 		return out;
 	}
+	public boolean get(int button){
+		return(this.Controllers[0].getRawButton(button));
+	}
 }
