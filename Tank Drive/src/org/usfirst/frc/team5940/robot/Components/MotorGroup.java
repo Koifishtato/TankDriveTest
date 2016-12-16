@@ -40,7 +40,7 @@ public class MotorGroup {
 			speed*=-1;
 		this.talons[2].set(-speed);
 		this.talons[3].set(-speed);
-		SmartDashboard.putNumber("L Motor Speed: ", speed);
+		SmartDashboard.putNumber("L Motor Speed: ", -speed);
 	}
 	public void go(double speed, int motor){
 		 this.talons[motor].set(speed);

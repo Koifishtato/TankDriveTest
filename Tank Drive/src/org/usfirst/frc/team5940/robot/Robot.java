@@ -15,26 +15,11 @@ import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 
-/**
- * This is a demo program showing the use of the RobotDrive class, specifically
- * it contains the code necessary to operate a robot with tank drive.
- *
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the SampleRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- *
- * WARNING: While it may look like a good choice to use for your code if you're
- * inexperienced, don't. Unless you know what you are doing, complex code will
- * be much more difficult under this system. Use IterativeRobot or Command-Based
- * instead if you're new.
- */
 public class Robot extends SampleRobot {
 	public Thread camera;
 	public Thread rand;
-	public boolean istank=true;
-	public boolean iswest=false;
+	public boolean istank=false;
+	public boolean iswest=true;
 	public Joy Joys = new Joy(0);
 	public Timer time = new Timer();
 	public Robot() {
@@ -49,6 +34,7 @@ public class Robot extends SampleRobot {
 	
 	//This is the Operator Control code. This runs when we start the robot.
 	public void operatorControl() {
+		//This loops until 
 		while(this.isOperatorControl()&& this.isEnabled()){
 		SmartDashboard.putBoolean("IsTank", this.istank);
 		if(this.istank){
@@ -66,23 +52,24 @@ public class Robot extends SampleRobot {
 			this.istank=!this.istank;
 			this.iswest=!this.iswest;
 	}
+	//This is a Method to run The tank drive code.
 	public void drivetank(){
 		//This tells the code to make a motor group called Motors. This is where the wheel motors are stored.
 		MotorGroup Motors = new MotorGroup();
 				
-				//This makes an Random generator.
-				this.rand= new Thread(new RandInt(this));
+		//This makes an Random generator.
+		this.rand= new Thread(new RandInt(this));
+			
+		//This tells the code there is a Motor to be called Roller on port 0.
+		MotorGroup Roller = new MotorGroup(0);
+		
+		//This tells the code there is a joystick on port 0.
 				
-				//This tells the code there is a Motor to be called Roller on port 0.
-				MotorGroup Roller = new MotorGroup(0);
+		//This makes an array of numbers to store the joystick positions.
+		double[] pos;
 				
-				//This tells the code there is a joystick on port 0.
-				
-				//This makes an array of numbers to store the joystick positions.
-				double[] pos;
-				
-				//This starts the random number generator
-				this.rand.start();
+		//This starts the random number generator
+		this.rand.start();
 		while (this.istank) {
 			if(this.Joys.get(1))
 				switchy();
@@ -148,13 +135,13 @@ public class Robot extends SampleRobot {
 			}
 			else if((pos[turn[1]]>pro||pos[turn[1]]<-pro)&&(pro<pos[turn[0]]||pos[turn[0]]<-pro)){
 				if (pos[turn[1]]<-pro){
-					speeds[0]=(pos[turn[0]]);
-					speeds[1]=(pos[turn[0]])-(pos[turn[1]]/(Math.abs(pos[turn[0]])-0.2));
+					speeds[0]=(-pos[turn[0]]);
+					speeds[1]=-((pos[turn[0]])-(pos[turn[1]]/(Math.abs(pos[turn[0]])-0.2)));
 					SmartDashboard.putString("Status ", "Turn Right");
 				}
 				else if(pos[turn[1]]>pro){
-					speeds[0]=(-pos[turn[0]])-(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
-					speeds[1]=(-pos[turn[0]]);
+					speeds[0]=(pos[turn[0]])-(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
+					speeds[1]=-(pos[turn[0]]);
 					SmartDashboard.putNumber("div ", pos[turn[1]]/Math.abs(pos[turn[0]]-0.1));
 				}
 			}
