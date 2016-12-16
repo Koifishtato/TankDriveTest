@@ -32,6 +32,11 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class Robot extends SampleRobot {
 	public Thread camera;
+	public Thread rand;
+	public boolean istank=true;
+	public boolean iswest=false;
+	public Joy Joys = new Joy(0);
+	public Timer time = new Timer();
 	public Robot() {
 		
 	}
@@ -44,33 +49,47 @@ public class Robot extends SampleRobot {
 	
 	//This is the Operator Control code. This runs when we start the robot.
 	public void operatorControl() {
+		while(this.isOperatorControl()&& this.isEnabled()){
+		SmartDashboard.putBoolean("IsTank", this.istank);
+		if(this.istank){
+			drivetank();
+		}
+		else
+			driveWest();
+		}
+		time.delay(0.5);
+	}
+	boolean getCorrectedDetector() {
+		return ballDetector.get();
+	}
+	public void switchy(){
+			this.istank=!this.istank;
+			this.iswest=!this.iswest;
+	}
+	public void drivetank(){
 		//This tells the code to make a motor group called Motors. This is where the wheel motors are stored.
 		MotorGroup Motors = new MotorGroup();
-		
-		//This is just for Noah...
-		Random rand = new Random();
-		
-		
-		//This tells the code there is a Motor to be called Roller on port 0.
-		MotorGroup Roller = new MotorGroup(0);
-		
-		//This tells the code there is a joystick on port 0.
-		Joy Joys = new Joy(0);
-		
-		//This makes a timer...
-		Timer time = new Timer();
-		
-		//This makes an array of numbers to store the joystick positions.
-		double[] pos;
-		
-		//This is a loop that runs the code inside the Braces until the code is disabled.
-		while (isOperatorControl() && isEnabled()) {
+				
+				//This makes an Random generator.
+				this.rand= new Thread(new RandInt(this));
+				
+				//This tells the code there is a Motor to be called Roller on port 0.
+				MotorGroup Roller = new MotorGroup(0);
+				
+				//This tells the code there is a joystick on port 0.
+				
+				//This makes an array of numbers to store the joystick positions.
+				double[] pos;
+				
+				//This starts the random number generator
+				this.rand.start();
+		while (this.istank) {
+			if(this.Joys.get(1))
+				switchy();
 			
 			//This makes the array of numbers we made eariler be set to the positions of the joysticks.
 			pos = Joys.get(0, 6);
 			
-			//Prints an random int
-			SmartDashboard.putNumber("Random",rand.nextInt(1000));
 			
 			//Checks if the left or right sticks are up or down
 			if(Math.abs(pos[1])>0.1||Math.abs(pos[5])>0.1){
@@ -99,59 +118,41 @@ public class Robot extends SampleRobot {
 			}
 			//This just puts the value of the sensor on the dashboard
 			SmartDashboard.putBoolean("Sensor", getCorrectedDetector());
-			Time.sleep(100);
 		}
-		
-		//This is not code that is in use right now.
-		/**this.camera = new Thread(new Camera(this));
+	}
+	public void driveWest(){
+		this.camera = new Thread(new Camera(this));
 		MotorGroup Motors = new MotorGroup();
 		Joy Joys = new Joy(0);
 		double[] pos;
 		//speed [1] is Left, and [0] is Right Motor group
 		double[] speeds={0,0};
-		int [] turn = {1,0};
+		int [] turn = {1,4};
+		double pro=0.2;
 		this.camera.start();
-		while (isOperatorControl() && isEnabled() ){
+		while (this.iswest ){
+			if(this.Joys.get(1))
+				switchy();
 			
 			pos=Joys.get(0, 6);
 			
-			if((pos[turn[0]]>0.1||pos[turn[0]]<-0.1)&&(0.1>pos[turn[1]]&&pos[turn[1]]>-0.1)){
+			if((pos[turn[0]]>pro||pos[turn[0]]<-pro)&&(pro>pos[turn[1]]&&pos[turn[1]]>-pro)){
 				speeds[0]=-pos[turn[0]];
 				speeds[1]=-pos[turn[0]];
 				SmartDashboard.putString("Status ", "Foward");
 			}
-			else if((pos[turn[1]]>0.1||pos[turn[1]]<-0.1)&&(0.1>pos[turn[0]]&&pos[turn[0]]>-0.1)){
+			else if((pos[turn[1]]>pro||pos[turn[1]]<-pro)&&(pro>pos[turn[0]]&&pos[turn[0]]>-pro)){
 				speeds[0]=-pos[turn[1]];
 				speeds[1]=pos[turn[1]];
 				SmartDashboard.putString("Status ", "Rotate");
 			}
-			else if((pos[turn[1]]>0.1||pos[turn[1]]<-0.1)&&(0.1<pos[turn[0]]||pos[turn[0]]<-0.1)){
-				if (pos[turn[1]]<-0.1){
-					if(pos[turn[0]]>-pro||pos[turn[0]]<pro){
-						speeds[0]=(pos[turn[0]]);
-						speeds[1]=(pos[turn[0]])-(pos[turn[1]]/2);
-						SmartDashboard.putString("Status ", "Turn Right Fast");
-					}
-					else{
-						speeds[0]=(pos[turn[0]]);
-						speeds[1]=(pos[turn[0]])-(pos[turn[1]]/10);
-						SmartDashboard.putString("Status ", "Turn Right Slow");
-					}
-					speeds[0]=(-pos[turn[0]]);
-					speeds[1]=(-pos[turn[0]])+(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
-					SmartDashboard.putNumber("div ", pos[turn[1]]/Math.abs(pos[turn[0]]-0.1));
+			else if((pos[turn[1]]>pro||pos[turn[1]]<-pro)&&(pro<pos[turn[0]]||pos[turn[0]]<-pro)){
+				if (pos[turn[1]]<-pro){
+					speeds[0]=(pos[turn[0]]);
+					speeds[1]=(pos[turn[0]])-(pos[turn[1]]/(Math.abs(pos[turn[0]])-0.2));
+					SmartDashboard.putString("Status ", "Turn Right");
 				}
-				else if(pos[turn[1]]>0.1){
-					if(pos[turn[0]]>-pro||pos[turn[0]]<pro){
-						speeds[0]=(pos[turn[0]])-(-pos[turn[1]]/2);
-						speeds[1]=(pos[turn[0]]);
-						SmartDashboard.putString("Status ", "Turn Left Fast");
-					}
-					else{
-						speeds[0]=(pos[turn[0]])-(-pos[turn[1]]/10);
-						speeds[1]=(pos[turn[0]]);
-						SmartDashboard.putString("Status ", "Turn Left Slow");
-					}
+				else if(pos[turn[1]]>pro){
 					speeds[0]=(-pos[turn[0]])-(pos[turn[1]]*(Math.abs(pos[turn[0]])-0.2));
 					speeds[1]=(-pos[turn[0]]);
 					SmartDashboard.putNumber("div ", pos[turn[1]]/Math.abs(pos[turn[0]]-0.1));
@@ -166,10 +167,6 @@ public class Robot extends SampleRobot {
 			Motors.goR(speeds[0]);
 			
 	}
-	*/	
-	}
-	boolean getCorrectedDetector() {
-		return ballDetector.get();
 	}
 }
 	
